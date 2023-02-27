@@ -23,7 +23,7 @@ function CheckoutForm() {
         if (!stripe || !elements || user.cart.count <= 0) return;
         setPaying(true);
         const paymentData = await axios.post(
-            "http://localhost:8080/create-payment",
+            "https://ecom-back-end-pt46.onrender.com/create-payment",
             {
               amount: user.cart.total,
             },
