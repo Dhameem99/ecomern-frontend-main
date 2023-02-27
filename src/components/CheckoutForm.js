@@ -1,4 +1,5 @@
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import axios from "axios";
 import React, { useState } from "react";
 import { Alert, Button, Col, Form, Row } from "react-bootstrap";
 import { useSelector } from "react-redux";
@@ -17,30 +18,40 @@ function CheckoutForm() {
     const [paying, setPaying] = useState(false);
 
     async function handlePay(e) {
+        let amount=3793
         e.preventDefault();
         if (!stripe || !elements || user.cart.count <= 0) return;
         setPaying(true);
-        const { client_secret } = await fetch("https://ecom-backend-app-b4mz.onrender.com/create-payment", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
+        const paymentData = await axios.post(
+            "http://localhost:8080/create-payment",
+            {
+              amount: user.cart.total,
+            },
+            {
+              headers: {
                 Authorization: "Bearer ",
-            },
-            body: JSON.stringify({ amount: user.cart.total }),
-        }).then((res) => res.json());
-        const { paymentIntent } = await stripe.confirmCardPayment(client_secret, {
-            payment_method: {
+              },
+            }
+            );
+            console.log(paymentData)
+          const { paymentIntent } = await stripe.confirmCardPayment(
+            paymentData.data.client_secret,
+            {
+              payment_method: {
                 card: elements.getElement(CardElement),
-            },
-        });
-        setPaying(false);
+              },
+            })
+       
+            setPaying(false);
+        
+        console.log(paymentIntent)
 
         if (paymentIntent) {
             createOrder({ userId: user._id, cart: user.cart, address, country }).then((res) => {
                 if (!isLoading && !isError) {
                     setAlertMessage(`Payment ${paymentIntent.status}`);
                     setTimeout(() => {
-                        // navigate("/orders");
+                         navigate("/orders");
                     }, 3000);
                 }
             });
